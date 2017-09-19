@@ -11,50 +11,65 @@ properties(
    ])]
 )
 
+def secrets = [
+  [$class: 'VaultSecret', path: 'secret/test/cc/payment/api/gov-pay-keys/cmc', secretValues:
+    [
+      [$class: 'VaultSecretValue', envVar: 'GOV_PAY_AUTH_KEY_CMC', vaultKey: 'value']
+    ]
+  ],
+  [$class: 'VaultSecret', path: 'secret/dev/cmc/notify/integration-tests/test_mode_api_key', secretValues:
+    [
+      [$class: 'VaultSecretValue', envVar: 'GOV_NOTIFY_API_KEY', vaultKey: 'value']
+    ]
+  ]
+]
+
 node {
-  stage('Checkout') {
-    deleteDir()
-    checkout scm
-    checkoutIntegrationTests()
-  }
-
-  stage('Update images') {
-    sh "${dockerCompose} pull"
-  }
-
-  try {
-    stage('Start environment') {
-      sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend"
+  wrap([$class: 'VaultBuildWrapper', vaultSecrets: secrets]) {
+    stage('Checkout') {
+      deleteDir()
+      checkout scm
+      checkoutIntegrationTests()
     }
 
-    stage('Run integration tests') {
-      sh 'mkdir -p output'
-      sh "${dockerCompose} up --no-deps --no-color integration-tests"
+    stage('Update images') {
+      sh "${dockerCompose} pull"
+    }
 
-      def testExitCode = steps.sh returnStdout: true,
-        script: "${dockerCompose} ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
-
-      if (testExitCode.toInteger() > 0) {
-        archiveArtifacts 'output/*.png'
-        error('Integration tests failed')
+    try {
+      stage('Start environment') {
+        sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend"
       }
 
-      sh 'mkdir -p reports'
-      sh "${dockerCompose} exec zap-proxy zap-cli report -o /zap/reports/integration-tests-scan.html -f html"
-      archiveArtifacts 'reports/integration-tests-scan.html'
-    }
+      stage('Run integration tests') {
+        sh 'mkdir -p output'
+        sh "${dockerCompose} up --no-deps --no-color integration-tests"
 
-    stage('Run active scan') {
-      sh "${dockerCompose} exec zap-proxy zap-cli open-url ${serviceURL}"
-      sh "${dockerCompose} exec zap-proxy zap-cli active-scan --scanners all --recursive ${serviceURL}"
-      sh "${dockerCompose} exec zap-proxy zap-cli report -o /zap/reports/active-scan.html -f html"
-      archiveArtifacts 'reports/active-scan.html'
-    }
-  } finally {
-    sh "mkdir -p output && ${dockerCompose} logs --no-color > output/logs.txt"
-    archiveArtifacts 'output/logs.txt'
+        def testExitCode = steps.sh returnStdout: true,
+          script: "${dockerCompose} ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
 
-    sh "${dockerCompose} down --remove-orphans"
+        if (testExitCode.toInteger() > 0) {
+          archiveArtifacts 'output/*.png'
+          error('Integration tests failed')
+        }
+
+        sh 'mkdir -p reports'
+        sh "${dockerCompose} exec zap-proxy zap-cli report -o /zap/reports/integration-tests-scan.html -f html"
+        archiveArtifacts 'reports/integration-tests-scan.html'
+      }
+
+      stage('Run active scan') {
+        sh "${dockerCompose} exec zap-proxy zap-cli open-url ${serviceURL}"
+        sh "${dockerCompose} exec zap-proxy zap-cli active-scan --scanners all --recursive ${serviceURL}"
+        sh "${dockerCompose} exec zap-proxy zap-cli report -o /zap/reports/active-scan.html -f html"
+        archiveArtifacts 'reports/active-scan.html'
+      }
+    } finally {
+      sh "mkdir -p output && ${dockerCompose} logs --no-color > output/logs.txt"
+      archiveArtifacts 'output/logs.txt'
+
+      sh "${dockerCompose} down --remove-orphans"
+    }
   }
 }
 
