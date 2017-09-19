@@ -52,7 +52,7 @@ node {
     }
   } finally {
     sh "mkdir -p output && ${dockerCompose} logs --no-color > output/logs.txt"
-    archiveArtifacts 'output/logs.txt'
+    archiveArtifacts 'integration-tests/output/logs.txt'
 
     sh "${dockerCompose} down --remove-orphans"
   }
