@@ -6,19 +6,21 @@ This is the security scan using ZAP proxy.
 
 ### Prerequisites
 
-The following software need to be installed:
+The following software needs to be installed:
 
 * [Docker](https://www.docker.com)
 
-In addition to the above a link to integration tests should exists as security scan runs integration tests through ZAP proxy. Link can be created using the following command:
+### Local environment setup
+
+In addition to above, a link to integration tests should exist as security scan runs integration tests through ZAP proxy. Link can be created using the following command:
 
 ```bash
-$ ln <path-to-integration-tests> integration-tests
+$ ln -s <path-to-integration-tests> integration-tests
 ```
 
-### Staring environment
+### Starting dockerized environment
 
-To start environment including ZAP proxy, Selenium Webdriver and service stack please run the following command:
+To start environment including ZAP proxy, Selenium Webdriver and CMC service stack please run the following command:
 
 ```bash
 $ ./bin/start-environment.sh
@@ -34,4 +36,4 @@ $ ./bin/run-integration-tests-scan.sh
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
