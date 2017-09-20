@@ -6,7 +6,7 @@ then
   exit 123
 fi
 
-OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml -p security-scan"
+OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory ."
 
 docker-compose ${OPTIONS} up --no-deps integration-tests
 
