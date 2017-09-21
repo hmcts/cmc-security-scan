@@ -1,6 +1,6 @@
 #!groovy
 
-java.lang.String dockerCompose = 'docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml -p security-scan'
+java.lang.String dockerCompose = 'docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory .'
 java.lang.String serviceURL = 'https://www-local.moneyclaim.reform.hmcts.net:3000'
 
 properties(
