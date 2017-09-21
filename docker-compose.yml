@@ -4,6 +4,9 @@ services:
   zap-proxy:
     image: owasp/zap2docker-weekly:latest
     command: zap-x.sh -daemon -host 0.0.0.0 -config view.mode=attack -config scanner.attackOnStart=true -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config connection.timeoutInSecs=120 -config database.recoverylog=false
+    environment:
+      - http_proxy
+      - https_proxy
     healthcheck:
       test: zap-cli status
       interval: 10s
