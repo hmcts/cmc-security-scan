@@ -38,12 +38,13 @@ node {
 
     try {
       stage('Start environment') {
+        sh 'mkdir -p output'
+        sh 'mkdir -p reports'
         sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend"
-        sh "${dockerCompose} exec -u root -T zap-proxy chown -R zap:zap /zap"
       }
 
       stage('Run integration tests') {
-        sh 'mkdir -p output'
+
         sh "${dockerCompose} up --no-deps --no-color integration-tests"
 
         def testExitCode = steps.sh returnStdout: true,
@@ -54,7 +55,6 @@ node {
           error('Integration tests failed')
         }
 
-        sh 'mkdir -p reports'
         sh "${dockerCompose} exec zap-proxy zap-cli report -o /zap/reports/integration-tests-scan.html -f html"
         archiveArtifacts 'reports/integration-tests-scan.html'
       }
@@ -66,7 +66,7 @@ node {
         archiveArtifacts 'reports/active-scan.html'
       }
     } finally {
-      sh "mkdir -p output && ${dockerCompose} logs --no-color > output/logs.txt"
+      sh "${dockerCompose} logs --no-color > output/logs.txt"
       archiveArtifacts 'output/logs.txt'
 
       sh "${dockerCompose} down --remove-orphans"
