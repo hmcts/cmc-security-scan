@@ -1,8 +1,5 @@
 #!groovy
 
-java.lang.String dockerCompose = 'docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory .'
-java.lang.String serviceURL = 'https://www-local.moneyclaim.reform.hmcts.net:3000'
-
 properties(
   [[$class: 'GithubProjectProperty', displayName: 'Security scan', projectUrlStr: 'https://git.reform.hmcts.net/cmc/security-scan/'],
    pipelineTriggers([
@@ -24,6 +21,10 @@ def secrets = [
   ]
 ]
 
+String dockerCompose = 'docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory .'
+String exec = 'exec -u `id -u` -T'
+String serviceURL = 'https://www-local.moneyclaim.reform.hmcts.net:3000'
+
 node {
   wrap([$class: 'VaultBuildWrapper', vaultSecrets: secrets]) {
     stage('Checkout') {
@@ -43,33 +44,32 @@ node {
         sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend"
       }
 
-      stage('Run integration tests') {
-
+      stage('Run integration tests through ZAP') {
         sh "${dockerCompose} up --no-deps --no-color integration-tests"
 
-        def testExitCode = steps.sh returnStdout: true,
-          script: "${dockerCompose} ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
-
+        def testExitCode = steps.sh returnStdout: true, script: "${dockerCompose} ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
         if (testExitCode.toInteger() > 0) {
           archiveArtifacts 'output/*.png'
           error('Integration tests failed')
         }
 
-        sh "${dockerCompose} exec -u `id -u` -T zap-proxy zap-cli report -o /zap/reports/integration-tests-scan.html -f html"
+        sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/integration-tests-scan.html -f html"
         archiveArtifacts 'reports/integration-tests-scan.html'
       }
 
       stage('Run active scan') {
-        sh "${dockerCompose} exec zap-proxy zap-cli open-url ${serviceURL}"
-        sh "${dockerCompose} exec zap-proxy zap-cli active-scan --scanners all --recursive ${serviceURL}"
-        sh "${dockerCompose} exec -u `id -u` -T zap-proxy zap-cli report -o /zap/reports/active-scan.html -f html"
+        sh "${dockerCompose} ${exec} zap-proxy zap-cli open-url ${serviceURL}"
+        sh "${dockerCompose} ${exec} zap-proxy zap-cli active-scan --scanners all --recursive ${serviceURL}"
+        sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/active-scan.html -f html"
         archiveArtifacts 'reports/active-scan.html'
       }
     } finally {
-      sh "${dockerCompose} logs --no-color > output/logs.txt"
-      archiveArtifacts 'output/logs.txt'
+      stage('Stop environment') {
+        sh "${dockerCompose} logs --no-color > output/logs.txt"
+        archiveArtifacts 'output/logs.txt'
 
-      sh "${dockerCompose} down --remove-orphans"
+        sh "${dockerCompose} down --remove-orphans"
+      }
     }
   }
 }
