@@ -13,4 +13,3 @@ mkdir -p reports
 docker-compose ${OPTIONS} exec zap-proxy zap-cli open-url ${SERVICE_URL}
 docker-compose ${OPTIONS} exec zap-proxy zap-cli active-scan --scanners all --recursive ${SERVICE_URL}
 docker-compose ${OPTIONS} exec zap-proxy zap-cli report -o /zap/reports/active-scan.html -f html
-docker-compose ${OPTIONS} exec zap-proxy zap-cli report -o /zap/reports/integration-tests-scan.html -f html
