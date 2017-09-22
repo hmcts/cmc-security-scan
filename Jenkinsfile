@@ -44,7 +44,7 @@ node {
         sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend"
       }
 
-      stage('Run integration tests through ZAP') {
+      stage('Run user journey through ZAP') {
         sh "${dockerCompose} up --no-deps --no-color integration-tests"
 
         def testExitCode = steps.sh returnStdout: true, script: "${dockerCompose} ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
@@ -57,7 +57,7 @@ node {
         archiveArtifacts 'reports/integration-tests-scan.html'
       }
 
-      stage('Run active scan') {
+      stage('Run active ZAP scan') {
         sh "${dockerCompose} ${exec} zap-proxy zap-cli open-url ${serviceURL}"
         sh "${dockerCompose} ${exec} zap-proxy zap-cli active-scan --scanners all --recursive ${serviceURL}"
         sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/active-scan.html -f html"
