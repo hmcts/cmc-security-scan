@@ -26,12 +26,22 @@ To start environment including ZAP proxy, Selenium Webdriver and CMC service sta
 $ ./bin/start-environment.sh
 ```
 
+There is a convenience `stop-environment` script as well.
+
 ### Run integration tests through ZAP proxy
 
 To run integration tests through ZAP proxy in attack mode please run the following command:
 
 ```bash
 $ ./bin/run-integration-tests-scan.sh
+```
+
+### Run an active ZAP scan against the application
+
+To run an active ZAP scan against the application execute:
+
+```bash
+$ ./bin/run-active-scan.sh
 ```
 
 ## License
