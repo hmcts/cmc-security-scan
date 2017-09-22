@@ -1,6 +1,7 @@
 #!groovy
 
 java.lang.String dockerCompose = 'docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory .'
+java.land.String exec = "exec -u root -T"
 java.lang.String serviceURL = 'https://www-local.moneyclaim.reform.hmcts.net:3000'
 
 properties(
@@ -54,14 +55,14 @@ node {
         }
 
         sh 'mkdir -p reports'
-        sh "${dockerCompose} exec zap-proxy zap-cli report -o /zap/reports/integration-tests-scan.html -f html"
+        sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/integration-tests-scan.html -f html"
         archiveArtifacts 'reports/integration-tests-scan.html'
       }
 
       stage('Run active scan') {
-        sh "${dockerCompose} exec zap-proxy zap-cli open-url ${serviceURL}"
-        sh "${dockerCompose} exec zap-proxy zap-cli active-scan --scanners all --recursive ${serviceURL}"
-        sh "${dockerCompose} exec zap-proxy zap-cli report -o /zap/reports/active-scan.html -f html"
+        sh "${dockerCompose} ${exec} zap-proxy zap-cli open-url ${serviceURL}"
+        sh "${dockerCompose} ${exec} zap-proxy zap-cli active-scan --scanners all --recursive ${serviceURL}"
+        sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/active-scan.html -f html"
         archiveArtifacts 'reports/active-scan.html'
       }
     } finally {
