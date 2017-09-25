@@ -33,3 +33,5 @@ docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www.payments.serv
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*hmctspiwik.useconnect.co.uk.*'
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www.google-analytics.com.*'
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*edgedl/chrome.*'
+docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*authentication-web.*'
+docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*(js|img|stylesheets)/lib.*'
