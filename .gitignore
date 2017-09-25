@@ -1,0 +1,13 @@
+.idea/
+*.iml
+
+.project
+.settings/
+
+*log
+.DS_Store
+
+integration-tests
+output
+reports
+
