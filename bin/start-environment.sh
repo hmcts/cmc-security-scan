@@ -11,3 +11,5 @@ OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project
 docker-compose ${OPTIONS} up -d zap-proxy \
                                 remote-webdriver \
                                 citizen-frontend
+
+$(dirname "$0")/set-scanning-exclusions.sh

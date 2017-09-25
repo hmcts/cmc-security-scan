@@ -38,10 +38,11 @@ node {
     }
 
     try {
-      stage('Start environment') {
+      stage('Start & setup environment') {
         sh 'mkdir -p output'
         sh 'mkdir -p reports'
         sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend"
+        sh "./bin/set-scanning-exclusions.sh"
       }
 
       stage('Run user journey through ZAP') {
