@@ -29,7 +29,7 @@ done
 # Exclude external domains from scanning
 echo "Setting external domains scanning exclusions"
 
-docker-compose ${OPTIONS} exec zap-proxy zap-cli exclude '.*www.payments.service.gov.uk.*'
-docker-compose ${OPTIONS} exec zap-proxy zap-cli exclude '.*hmctspiwik.useconnect.co.uk.*'
-docker-compose ${OPTIONS} exec zap-proxy zap-cli exclude '.*www.google-analytics.com.*'
-docker-compose ${OPTIONS} exec zap-proxy zap-cli exclude '.*edgedl/chrome.*'
+docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www.payments.service.gov.uk.*'
+docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*hmctspiwik.useconnect.co.uk.*'
+docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www.google-analytics.com.*'
+docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*edgedl/chrome.*'

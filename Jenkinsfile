@@ -22,7 +22,8 @@ def secrets = [
 ]
 
 String dockerCompose = 'docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory .'
-String exec = 'exec -u `id -u` -T'
+String execParams = '-u $(id -u) -T'
+GString exec = "exec ${execParams}"
 String serviceURL = 'https://www-local.moneyclaim.reform.hmcts.net:3000'
 
 node {
@@ -42,7 +43,7 @@ node {
         sh 'mkdir -p output'
         sh 'mkdir -p reports'
         sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend"
-        sh "./bin/set-scanning-exclusions.sh"
+        sh "./bin/set-scanning-exclusions.sh ${execParams}"
       }
 
       stage('Run user journey through ZAP') {
