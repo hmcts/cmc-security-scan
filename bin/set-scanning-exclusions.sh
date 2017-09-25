@@ -19,7 +19,7 @@ do
   sleep 10
   if [ ${RETRIES} -gt 10 ]
   then
-    echo "ZAP Proxy container not healthy after reaching maximal retries, exiting"
+    echo "ZAP Proxy container not healthy after reaching maximum retries, exiting"
     exit 1
   else
     RETRIES=$(($RETRIES+1))
@@ -27,7 +27,7 @@ do
 done
 
 # Exclude external domains from scanning
-echo "Setting external domains scanning exclusions"
+echo "Setting scanning exclusions"
 
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www.payments.service.gov.uk.*'
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*hmctspiwik.useconnect.co.uk.*'
