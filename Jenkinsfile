@@ -55,15 +55,8 @@ node {
           error('Integration tests failed')
         }
 
-        sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/integration-tests-scan.html -f html"
-        archiveArtifacts 'reports/integration-tests-scan.html'
-      }
-
-      stage('Run active ZAP scan') {
-        sh "${dockerCompose} ${exec} zap-proxy zap-cli open-url ${serviceURL}"
-        sh "${dockerCompose} ${exec} zap-proxy zap-cli active-scan --scanners all --recursive ${serviceURL}"
-        sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/active-scan.html -f html"
-        archiveArtifacts 'reports/active-scan.html'
+        sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html"
+        archiveArtifacts 'reports/zap-scan-report.html'
       }
     } finally {
       stage('Stop environment') {
