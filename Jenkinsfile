@@ -1,7 +1,7 @@
 #!groovy
 
 properties(
-  [[$class: 'GithubProjectProperty', displayName: 'Security scan', projectUrlStr: 'https://git.reform.hmcts.net/cmc/security-scan/'],
+  [[$class: 'GithubProjectProperty', displayName: 'Security scan', projectUrlStr: 'https://github.com/hmcts/cmc-security-scan'],
    pipelineTriggers([
      [$class: 'GitHubPushTrigger'],
      [$class: 'hudson.triggers.TimerTrigger', spec: 'H 1 * * *']
