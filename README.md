@@ -36,14 +36,6 @@ To run integration tests through ZAP proxy in attack mode please run the followi
 $ ./bin/run-integration-tests-scan.sh
 ```
 
-### Run an active ZAP scan against the application
-
-To run an active ZAP scan against the application execute:
-
-```bash
-$ ./bin/run-active-scan.sh
-```
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
