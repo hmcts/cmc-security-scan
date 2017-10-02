@@ -95,7 +95,7 @@ node {
           error('Legal Integration tests failed')
         }
 
-        sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/legal-zap-scan-report.html -f html"
+        sh "${legalDockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/legal-zap-scan-report.html -f html"
         archiveArtifacts 'reports/legal-zap-scan-report.html'
       }
     } finally {
