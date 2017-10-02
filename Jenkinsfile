@@ -83,7 +83,7 @@ node {
         sh 'mkdir -p output'
         sh 'mkdir -p reports'
         sh "${legalDockerCompose} up -d zap-proxy remote-webdriver legal-frontend"
-        sh "./bin/set-scanning-exclusions.sh ${execParams}"
+        sh "./bin/set-legal-scanning-exclusions.sh ${execParams}"
       }
 
       stage('Run user journey through ZAP') {
