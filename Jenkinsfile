@@ -80,6 +80,8 @@ node {
 
     try {
       stage('Start & setup environment') {
+        sh 'mkdir -p output'
+        sh 'mkdir -p reports'
         sh "${legalDockerCompose} up -d zap-proxy remote-webdriver legal-frontend"
         sh "./bin/set-scanning-exclusions.sh ${execParams}"
       }
@@ -120,7 +122,7 @@ private void checkoutLegalIntegrationTests() {
   checkout([
     $class: 'GitSCM',
     branches: [[name: 'master']],
-    userRemoteConfigs: [[url: 'git@github.com:hmcts/legal-integration-tests.git']],
+    userRemoteConfigs: [[url: 'https://github.com/hmcts/legal-integration-tests.git']],
     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'legal-integration-tests']]
   ])
 }

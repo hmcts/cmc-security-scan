@@ -11,7 +11,7 @@ services:
     volumes:
       - ./reports:/zap/reports
   legal-integration-tests:
-      command: test -- --steps --grep 'I can as an Individual make a claim against an Individual Without a defendant email address and are able to pay on the Gov Pay page'
+      command: test -- --steps --grep 'I can fill in Organisation details for Claimant, Defendant, Claim amount and Submit the claim'
       environment:
         - http_proxy=http://zap-proxy:8080
         - https_proxy=http://zap-proxy:8080
