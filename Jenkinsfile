@@ -22,6 +22,7 @@ def secrets = [
 ]
 
 String dockerCompose = 'docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory .'
+String legalDockerCompose = 'docker-compose -f legal-integration-tests/docker-compose.yml -f docker-compose.yml --project-directory .'
 String execParams = '-u $(id -u) -T'
 GString exec = "exec ${execParams}"
 String serviceURL = 'https://www-local.moneyclaim.reform.hmcts.net:3000'
@@ -66,6 +67,43 @@ node {
         sh "${dockerCompose} down --remove-orphans"
       }
     }
+
+    stage('Checkout Legal') {
+      deleteDir()
+      checkout scm
+      checkoutLegalIntegrationTests()
+    }
+
+    stage('Update images') {
+      sh "${legalDockerCompose} pull"
+    }
+
+    try {
+      stage('Start & setup environment') {
+        sh "${legalDockerCompose} up -d zap-proxy remote-webdriver legal-frontend"
+        sh "./bin/set-scanning-exclusions.sh ${execParams}"
+      }
+
+      stage('Run user journey through ZAP') {
+        sh "${legalDockerCompose} up --no-deps --no-color legal-integration-tests"
+
+        def testExitCode = steps.sh returnStdout: true, script: "${legalDockerCompose} ps -q legal-integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
+        if (testExitCode.toInteger() > 0) {
+          archiveArtifacts 'output/*.png'
+          error('Legal Integration tests failed')
+        }
+
+        sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/legal-zap-scan-report.html -f html"
+        archiveArtifacts 'reports/legal-zap-scan-report.html'
+      }
+    } finally {
+      stage('Stop environment') {
+        sh "${legalDockerCompose} logs --no-color > output/logs.txt"
+        archiveArtifacts 'output/logs.txt'
+
+        sh "${legalDockerCompose} down --remove-orphans"
+      }
+    }
   }
 }
 
@@ -75,5 +113,14 @@ private void checkoutIntegrationTests() {
     branches: [[name: 'master']],
     userRemoteConfigs: [[url: 'git@git.reform.hmcts.net:cmc/integration-tests.git']],
     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'integration-tests']]
+  ])
+}
+
+private void checkoutLegalIntegrationTests() {
+  checkout([
+    $class: 'GitSCM',
+    branches: [[name: 'master']],
+    userRemoteConfigs: [[url: 'git@github.com:hmcts/legal-integration-tests.git']],
+    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'legal-integration-tests']]
   ])
 }
