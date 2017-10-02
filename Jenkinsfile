@@ -22,7 +22,7 @@ def secrets = [
 ]
 
 String dockerCompose = 'docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory .'
-String legalDockerCompose = 'docker-compose -f legal-integration-tests/docker-compose.yml -f docker-compose.yml --project-directory .'
+String legalDockerCompose = 'docker-compose -f legal-integration-tests/docker-compose.yml -f docker-compose-legal.yml --project-directory .'
 String execParams = '-u $(id -u) -T'
 GString exec = "exec ${execParams}"
 String serviceURL = 'https://www-local.moneyclaim.reform.hmcts.net:3000'
