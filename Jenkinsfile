@@ -50,7 +50,7 @@ node {
       stage('Run user journey through ZAP') {
         sh "${dockerCompose} up --no-deps --no-color integration-tests"
 
-        def testExitCode = steps.sh returnStdout: true, script: "${dockerCompose} ps -q legal-integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
+        def testExitCode = steps.sh returnStdout: true, script: "${dockerCompose} ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
         if (testExitCode.toInteger() > 0) {
           archiveArtifacts 'output/*.png'
           error('Integration tests failed')
