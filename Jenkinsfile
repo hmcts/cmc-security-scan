@@ -42,7 +42,7 @@ node {
       stage('Start & setup environment') {
         sh 'mkdir -p output'
         sh 'mkdir -p reports'
-        sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend"
+        sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend legal-frontend"
         sh "./bin/set-scanning-exclusions.sh ${execParams}"
       }
 
@@ -67,7 +67,6 @@ node {
         }
 
         stage('Start & setup environment') {
-          sh "${legalDockerCompose} up -d zap-proxy remote-webdriver legal-frontend"
           sh "./bin/set-legal-scanning-exclusions.sh ${execParams}"
         }
 
