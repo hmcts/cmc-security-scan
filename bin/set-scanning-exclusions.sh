@@ -7,7 +7,7 @@ then
   exit 123
 fi
 
-OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory ."
+OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml -f docker-compose-citizen.yml --project-directory ."
 
 # Wait for ZAP Proxy to be available
 ZAP_CONTAINER_ID="$(docker-compose ${OPTIONS} ps -q zap-proxy)"

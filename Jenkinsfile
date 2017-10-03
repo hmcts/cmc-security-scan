@@ -66,8 +66,9 @@ node {
           sh "${legalDockerCompose} pull"
         }
 
-        stage('Start & setup environment') {
-          sh "${legalDockerCompose} up -d legal-frontend"
+        stage('Start & setup legal environment') {
+          sh "${dockerCompose} down --remove-orphans"
+          sh "${legalDockerCompose} up -d zap-proxy remote-webdriver legal-frontend"
           sh "./bin/set-legal-scanning-exclusions.sh ${execParams}"
         }
 
