@@ -1,15 +1,6 @@
 version: '2.1'
 
 services:
-  zap-proxy:
-    image: owasp/zap2docker-weekly:latest
-    command: zap-x.sh -daemon -host 0.0.0.0 -config view.mode=attack -config scanner.attackOnStart=true -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config connection.timeoutInSecs=120 -config database.recoverylog=false -config connection.proxyChain.hostName=proxyout.reform.hmcts.net -config connection.proxyChain.port=8080 -config connection.proxyChain.skipName=www-local.moneyclaim.reform.hmcts.net;authentication-web
-    healthcheck:
-      test: zap-cli status
-      interval: 10s
-      retries: 10
-    volumes:
-      - ./reports:/zap/reports
   legal-integration-tests:
       command: test -- --steps --grep 'I can fill in Organisation details for Claimant, Defendant, Claim amount and Submit the claim'
       environment:
