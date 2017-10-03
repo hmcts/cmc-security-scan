@@ -57,6 +57,32 @@ node {
 
         sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html"
         archiveArtifacts 'reports/zap-scan-report.html'
+
+        stage('Checkout Legal') {
+          checkoutLegalIntegrationTests()
+        }
+
+        stage('Update images') {
+          sh "${legalDockerCompose} pull"
+        }
+
+        stage('Start & setup environment') {
+          sh "${legalDockerCompose} up -d zap-proxy remote-webdriver legal-frontend"
+          sh "./bin/set-legal-scanning-exclusions.sh ${execParams}"
+        }
+
+        stage('Run user journey through ZAP') {
+          sh "${legalDockerCompose} up --no-deps --no-color legal-integration-tests"
+
+          testExitCode = steps.sh returnStdout: true, script: "${legalDockerCompose} ps -q legal-integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
+          if (testExitCode.toInteger() > 0) {
+            archiveArtifacts 'output/*.png'
+            error('Legal Integration tests failed')
+          }
+
+          sh "${legalDockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/legal-zap-scan-report.html -f html"
+          archiveArtifacts 'reports/legal-zap-scan-report.html'
+        }
       }
     } finally {
       stage('Stop environment') {
@@ -64,42 +90,6 @@ node {
         archiveArtifacts 'output/logs.txt'
 
         sh "${dockerCompose} down --remove-orphans"
-      }
-    }
-
-    stage('Checkout Legal') {
-      checkoutLegalIntegrationTests()
-    }
-
-    stage('Update images') {
-      sh "${legalDockerCompose} pull"
-    }
-
-    try {
-      stage('Start & setup environment') {
-        sh 'mkdir -p output'
-        sh 'mkdir -p reports'
-        sh "${legalDockerCompose} up -d zap-proxy remote-webdriver legal-frontend"
-        sh "./bin/set-legal-scanning-exclusions.sh ${execParams}"
-      }
-
-      stage('Run user journey through ZAP') {
-        sh "${legalDockerCompose} up --no-deps --no-color legal-integration-tests"
-
-        def testExitCode = steps.sh returnStdout: true, script: "${legalDockerCompose} ps -q legal-integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
-        if (testExitCode.toInteger() > 0) {
-          archiveArtifacts 'output/*.png'
-          error('Legal Integration tests failed')
-        }
-
-        sh "${legalDockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/legal-zap-scan-report.html -f html"
-        archiveArtifacts 'reports/legal-zap-scan-report.html'
-      }
-    } finally {
-      stage('Stop environment') {
-        sh "${legalDockerCompose} logs --no-color > output/logs.txt"
-        archiveArtifacts 'output/logs.txt'
-
         sh "${legalDockerCompose} down --remove-orphans"
       }
     }
