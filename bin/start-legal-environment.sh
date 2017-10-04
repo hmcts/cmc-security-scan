@@ -6,10 +6,8 @@ then
   exit 123
 fi
 
-OPTIONS="-f legal-integration-tests/docker-compose.yml -f docker-compose.yml --project-directory ."
+OPTIONS="-f legal-integration-tests/docker-compose.yml -f docker-compose.yml -f docker-compose-legal.yml --project-directory ."
 
-docker-compose ${OPTIONS} up -d zap-proxy \
-                                remote-webdriver \
-                                legal-frontend
+docker-compose ${OPTIONS} up -d zap-proxy remote-webdriver legal-frontend
 
-$(dirname "$0")/set-scanning-exclusions.sh
+$(dirname "$0")/set-legal-scanning-exclusions.sh

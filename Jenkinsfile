@@ -39,14 +39,14 @@ node {
     }
 
     try {
-      stage('Start & setup environment') {
+      stage('Start & setup citizen environment') {
         sh 'mkdir -p output'
         sh 'mkdir -p reports'
         sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend"
         sh "./bin/set-scanning-exclusions.sh ${execParams}"
       }
 
-      stage('Run user journey through ZAP') {
+      stage('Run citizen user journey through ZAP') {
         sh "${dockerCompose} up --no-deps --no-color integration-tests"
 
         def testExitCode = steps.sh returnStdout: true, script: "${dockerCompose} ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
@@ -58,7 +58,7 @@ node {
         sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html"
         archiveArtifacts 'reports/zap-scan-report.html'
 
-        stage('Checkout Legal') {
+        stage('Checkout Legal Integration Tests') {
           checkoutLegalIntegrationTests()
         }
 
@@ -71,7 +71,7 @@ node {
           sh "./bin/set-legal-scanning-exclusions.sh ${execParams}"
         }
 
-        stage('Run user journey through ZAP') {
+        stage('Run legal user journey through ZAP') {
           sh "${legalDockerCompose} up --no-deps --no-color legal-integration-tests"
 
           testExitCode = steps.sh returnStdout: true, script: "${legalDockerCompose} ps -q legal-integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
@@ -85,7 +85,7 @@ node {
         }
       }
     } finally {
-      stage('Stop environment') {
+      stage('Stop environments') {
         sh "${dockerCompose} logs --no-color > output/logs.txt"
         archiveArtifacts 'output/logs.txt'
 
