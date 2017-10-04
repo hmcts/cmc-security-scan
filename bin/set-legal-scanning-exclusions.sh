@@ -34,4 +34,3 @@ docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www.google-analyt
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*edgedl/chrome.*'
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*authentication-web.*'
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*(js|img|stylesheets)/lib.*'
-docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www-local.moneyclaim.reform.hmcts.net:3000/claim/.*'
