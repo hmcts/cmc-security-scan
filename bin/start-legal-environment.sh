@@ -8,6 +8,8 @@ fi
 
 OPTIONS="-f legal-integration-tests/docker-compose.yml -f docker-compose.yml -f docker-compose-legal.yml --project-directory ."
 
+docker-compose ${OPTIONS} pull
+
 docker-compose ${OPTIONS} up -d zap-proxy remote-webdriver legal-frontend
 
 $(dirname "$0")/set-legal-scanning-exclusions.sh

@@ -8,6 +8,8 @@ fi
 
 OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml -f docker-compose-citizen.yml --project-directory ."
 
+docker-compose ${OPTIONS} pull
+
 docker-compose ${OPTIONS} up -d zap-proxy remote-webdriver citizen-frontend
 
 $(dirname "$0")/set-scanning-exclusions.sh
