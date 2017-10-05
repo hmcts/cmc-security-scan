@@ -25,6 +25,7 @@ String dockerCompose = 'docker-compose -f integration-tests/docker-compose.yml -
 String legalDockerCompose = 'docker-compose -f legal-integration-tests/docker-compose.yml -f docker-compose.yml -f docker-compose-legal.yml --project-directory .'
 String execParams = '-u $(id -u) -T'
 GString exec = "exec ${execParams}"
+env.COMPOSE_HTTP_TIMEOUT = 240
 
 node {
   wrap([$class: 'VaultBuildWrapper', vaultSecrets: secrets]) {
