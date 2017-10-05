@@ -6,6 +6,6 @@ then
   exit 123
 fi
 
-OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory ."
+OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml -f docker-compose-citizen.yml --project-directory ."
 
 docker-compose ${OPTIONS} down ${@}
