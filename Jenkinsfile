@@ -67,8 +67,8 @@ node {
         }
 
         stage('Start & setup legal environment') {
-          sh "docker-compose stop zap-proxy"
-          sh "docker-compose rm -f zap-proxy"
+          sh "${dockerCompose} stop zap-proxy"
+          sh "${dockerCompose} rm -f zap-proxy"
           sh "${legalDockerCompose} up -d zap-proxy remote-webdriver legal-frontend"
           sh "./bin/set-legal-scanning-exclusions.sh ${execParams}"
         }
