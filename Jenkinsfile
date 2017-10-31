@@ -74,7 +74,7 @@ private void checkoutIntegrationTests() {
   checkout([
     $class: 'GitSCM',
     branches: [[name: 'master']],
-    userRemoteConfigs: [[url: 'git@github.com:hmcts/cmc-integration-tests.git']],
+    userRemoteConfigs: [[url: 'https://github.com/hmcts/cmc-integration-tests.git']],
     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'integration-tests']]
   ])
 }
