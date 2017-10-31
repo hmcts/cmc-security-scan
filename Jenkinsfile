@@ -47,7 +47,7 @@ node {
       }
 
       stage('Run user journey through ZAP') {
-        sh "${dockerCompose} run --no-deps --rm integration-tests"
+        sh "${dockerCompose} run --no-deps integration-tests"
 
         def testExitCode = steps.sh returnStdout: true, script: "${dockerCompose} ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
         if (testExitCode.toInteger() > 0) {
