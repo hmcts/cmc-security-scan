@@ -7,7 +7,7 @@ then
   exit 123
 fi
 
-OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml -f docker-compose-citizen.yml --project-directory ."
+OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory ."
 
 # Wait for ZAP Proxy to be available
 ZAP_CONTAINER_ID="$(docker-compose ${OPTIONS} ps -q zap-proxy)"
@@ -30,7 +30,6 @@ done
 echo "Setting scanning exclusions"
 
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www.payments.service.gov.uk.*'
-docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*hmctspiwik.useconnect.co.uk.*'
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www.google-analytics.com.*'
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*edgedl/chrome.*'
 docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*authentication-web.*'

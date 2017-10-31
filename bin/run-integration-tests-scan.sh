@@ -6,9 +6,9 @@ then
   exit 123
 fi
 
-OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml -f docker-compose-citizen.yml --project-directory ."
+OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory ."
 
-docker-compose ${OPTIONS} up --no-deps integration-tests
+docker-compose ${OPTIONS} run --no-deps --rm integration-tests test -- --grep '@quick'
 
 if [ $? != 0 ]; then
   echo 'Integration tests failed'

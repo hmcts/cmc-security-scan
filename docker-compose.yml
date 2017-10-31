@@ -3,10 +3,20 @@ version: '2.1'
 services:
   zap-proxy:
     image: owasp/zap2docker-weekly:latest
-    command: zap-x.sh -daemon -host 0.0.0.0 -config view.mode=attack -config scanner.attackOnStart=true -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config connection.timeoutInSecs=120 -config database.recoverylog=false -config connection.proxyChain.hostName=proxyout.reform.hmcts.net -config connection.proxyChain.port=8080 -config connection.proxyChain.skipName=www-local.moneyclaim.reform.hmcts.net;authentication-web
+    command: zap-x.sh -daemon -host 0.0.0.0 -config view.mode=attack -config scanner.attackOnStart=true -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -config connection.timeoutInSecs=120 -config database.recoverylog=false -config connection.proxyChain.hostName=proxyout.reform.hmcts.net -config connection.proxyChain.port=8080 -config connection.proxyChain.skipName=www-citizen.moneyclaim.reform.hmcts.net;www-legal.moneyclaim.reform.hmcts.net;authentication-web
     healthcheck:
       test: zap-cli status
       interval: 10s
       retries: 10
     volumes:
       - ./reports:/zap/reports
+  integration-tests:
+    command: test -- --grep '@quick'
+    environment:
+      - http_proxy=http://zap-proxy:8080
+      - https_proxy=http://zap-proxy:8080
+      - no_proxy=idam-api,remote-webdriver,claim-store-api
+    depends_on:
+      zap-proxy:
+        condition: service_healthy
+
