@@ -64,7 +64,6 @@ node {
         archiveArtifacts 'output/logs.txt'
 
         sh "${dockerCompose} down --remove-orphans"
-        sh "${legalDockerCompose} down --remove-orphans"
       }
     }
   }
