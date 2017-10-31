@@ -8,7 +8,7 @@ fi
 
 OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory ."
 
-docker-compose ${OPTIONS} run --no-deps integration-tests
+docker-compose ${OPTIONS} up --no-deps integration-tests
 
 if [ $? != 0 ]; then
   echo 'Integration tests failed'
