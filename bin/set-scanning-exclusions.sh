@@ -11,7 +11,7 @@ until docker ps --filter "id=${ZAP_CONTAINER_ID}" --format '{{ .Status }}' | gre
 do
   echo "ZAP Proxy not healthy yet"
   sleep 10
-  if [ ${RETRIES} -gt 10 ]
+  if [ ${RETRIES} -gt 36 ]
   then
     echo "ZAP Proxy container not healthy after reaching maximum retries, exiting"
     exit 1
