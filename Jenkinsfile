@@ -21,7 +21,7 @@ def secrets = [
   ]
 ]
 
-String dockerCompose = 'docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory .'
+String dockerCompose = "docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml --project-name ${env.BUILD_TAG}"
 String execParams = '-u $(id -u) -T'
 GString exec = "exec ${execParams}"
 env.COMPOSE_HTTP_TIMEOUT = 240
