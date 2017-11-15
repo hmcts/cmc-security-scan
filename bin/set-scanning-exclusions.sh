@@ -1,13 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-# Sanity & setup
-if [[ ! -e 'integration-tests' ]]
-then
-  echo "Integration Tests not available, have you linked the directory? Check the README file for further details.\n"
-  exit 123
-fi
-
-OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory ."
+source $(dirname $0)/internal/common.sh
+checkIntegrationTestsDirectoryExists
 
 # Wait for ZAP Proxy to be available
 ZAP_CONTAINER_ID="$(docker-compose ${OPTIONS} ps -q zap-proxy)"
