@@ -60,8 +60,11 @@ node {
       }
     } finally {
       stage('Stop environments') {
-        sh "${dockerCompose} logs --no-color > output/logs.txt"
-        archiveArtifacts 'output/logs.txt'
+        sh "${dockerCompose} ps > output/docker-status.txt"
+        archiveArtifacts 'output/docker-status.txt'
+
+        sh "for service in \$(${dockerCompose} config --services); do ${dockerCompose} logs --no-color \$service > output/docker-log-\$service.txt; done"
+        archiveArtifacts 'output/docker-log*.txt'
 
         sh "${dockerCompose} down --remove-orphans"
       }
