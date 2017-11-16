@@ -1,8 +1,10 @@
 #!/bin/sh
 
-OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project-name $(basename $(pwd))"
+if [[ -z "${COMPOSE_PROJECT_NAME}" ]]; then
+  export COMPOSE_PROJECT_NAME=$(basename $(pwd))
+fi
 
-echo $OPTIONS
+OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml"
 
 checkIntegrationTestsDirectoryExists () {
   if [[ ! -e 'integration-tests' ]]

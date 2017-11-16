@@ -21,10 +21,12 @@ def secrets = [
   ]
 ]
 
-String dockerCompose = "docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml --project-name ${env.BUILD_TAG}"
+env.COMPOSE_PROJECT_NAME = env.BUILD_TAG
+env.COMPOSE_HTTP_TIMEOUT = 240
+
+String dockerCompose = "docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml"
 String execParams = '-u $(id -u) -T'
 GString exec = "exec ${execParams}"
-env.COMPOSE_HTTP_TIMEOUT = 240
 
 node {
   wrap([$class: 'VaultBuildWrapper', vaultSecrets: secrets]) {
