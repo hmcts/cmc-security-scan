@@ -2,6 +2,8 @@
 
 OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project-name $(basename $(pwd))"
 
+echo $OPTIONS
+
 checkIntegrationTestsDirectoryExists () {
   if [[ ! -e 'integration-tests' ]]
   then
