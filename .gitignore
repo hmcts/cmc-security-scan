@@ -7,8 +7,9 @@
 *log
 .DS_Store
 
-integration-tests
-legal-integration-tests
+docker-compose.yml
+docker
+
 output
 reports
 

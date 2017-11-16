@@ -1,11 +1,6 @@
 #!/bin/sh
 
-if [[ ! -e 'integration-tests' ]]
-then
-  echo "Integration Tests not available, have you linked the directory? Check the README file for further details.\n"
-  exit 123
-fi
+source $(dirname $0)/internal/common.sh
+checkIntegrationTestsResourcesExists
 
-OPTIONS="-f integration-tests/docker-compose.yml -f docker-compose.yml --project-directory ."
-
-docker-compose ${OPTIONS} down ${@}
+docker-compose down ${@}
