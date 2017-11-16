@@ -1,9 +1,9 @@
 #!/bin/sh
 
 source $(dirname $0)/internal/common.sh
-checkIntegrationTestsDirectoryExists
+checkIntegrationTestsResourcesExists
 
-docker-compose ${OPTIONS} up --no-deps integration-tests
+docker-compose up --no-deps integration-tests
 
 if [ $? != 0 ]; then
   echo 'Integration tests failed'
@@ -11,4 +11,4 @@ if [ $? != 0 ]; then
 fi
 
 mkdir -p reports
-docker-compose ${OPTIONS} exec zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html
+docker-compose exec zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html

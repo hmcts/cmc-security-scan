@@ -1,6 +1,6 @@
 #!/bin/sh
 
 source $(dirname $0)/internal/common.sh
-checkIntegrationTestsDirectoryExists
+checkIntegrationTestsResourcesExists
 
-docker-compose ${OPTIONS} down ${@}
+docker-compose down ${@}

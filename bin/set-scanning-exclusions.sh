@@ -1,10 +1,10 @@
 #!/bin/sh
 
 source $(dirname $0)/internal/common.sh
-checkIntegrationTestsDirectoryExists
+checkIntegrationTestsResourcesExists
 
 # Wait for ZAP Proxy to be available
-ZAP_CONTAINER_ID="$(docker-compose ${OPTIONS} ps -q zap-proxy)"
+ZAP_CONTAINER_ID="$(docker-compose ps -q zap-proxy)"
 RETRIES=0
 
 until docker ps --filter "id=${ZAP_CONTAINER_ID}" --format '{{ .Status }}' | grep --quiet '(healthy)'
@@ -23,8 +23,8 @@ done
 # Exclude external domains from scanning
 echo "Setting scanning exclusions"
 
-docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www.payments.service.gov.uk.*'
-docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*www.google-analytics.com.*'
-docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*edgedl/chrome.*'
-docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*authentication-web.*'
-docker-compose ${OPTIONS} exec $@ zap-proxy zap-cli exclude '.*(js|img|stylesheets)/lib.*'
+docker-compose exec $@ zap-proxy zap-cli exclude '.*www.payments.service.gov.uk.*'
+docker-compose exec $@ zap-proxy zap-cli exclude '.*www.google-analytics.com.*'
+docker-compose exec $@ zap-proxy zap-cli exclude '.*edgedl/chrome.*'
+docker-compose exec $@ zap-proxy zap-cli exclude '.*authentication-web.*'
+docker-compose exec $@ zap-proxy zap-cli exclude '.*(js|img|stylesheets)/lib.*'

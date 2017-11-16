@@ -15,7 +15,7 @@ The following software needs to be installed:
 In addition to above, a link to integration tests should exist as security scan runs integration tests through ZAP proxy. Link can be created using the following command:
 
 ```bash
-$ ln -s <path-to-integration-tests> integration-tests
+$ ./bin/link-integration-tests-project.sh <path-to-integration-tests>
 ```
 
 ### Starting dockerized environment
@@ -34,6 +34,14 @@ To run integration tests through ZAP proxy in attack mode please run the followi
 
 ```bash
 $ ./bin/run-integration-tests-scan.sh
+```
+
+### Stopping dockerized environment
+
+To stop environment including ZAP proxy, Selenium Webdriver and CMC service stack please run the following command:
+
+```bash
+$ ./bin/stop-environment.sh
 ```
 
 ## License

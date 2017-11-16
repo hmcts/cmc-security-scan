@@ -1,8 +1,8 @@
 #!/bin/sh
 
 source $(dirname $0)/internal/common.sh
-checkIntegrationTestsDirectoryExists
+checkIntegrationTestsResourcesExists
 
-docker-compose ${OPTIONS} up -d zap-proxy remote-webdriver citizen-frontend legal-frontend
+docker-compose up -d zap-proxy remote-webdriver citizen-frontend legal-frontend
 
-$(dirname "$0")/set-scanning-exclusions.sh
+$(dirname $0)/set-scanning-exclusions.sh
