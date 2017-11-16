@@ -21,10 +21,8 @@ def secrets = [
   ]
 ]
 
-env.COMPOSE_PROJECT_NAME = env.BUILD_TAG
 env.COMPOSE_HTTP_TIMEOUT = 240
 
-String dockerCompose = "docker-compose -f integration-tests/docker-compose.yml -f docker-compose.yml"
 String execParams = '-u $(id -u) -T'
 GString exec = "exec ${execParams}"
 
@@ -33,52 +31,53 @@ node {
     stage('Checkout') {
       deleteDir()
       checkout scm
-      checkoutIntegrationTests()
+      prepareIntegrationTestsResources()
     }
 
     stage('Update images') {
-      sh "${dockerCompose} pull"
+      sh "docker-compose pull"
     }
 
     try {
       stage('Start & setup environment') {
         sh 'mkdir -p output'
         sh 'mkdir -p reports'
-        sh "${dockerCompose} up -d zap-proxy remote-webdriver citizen-frontend legal-frontend"
+        sh "docker-compose up -d zap-proxy remote-webdriver citizen-frontend legal-frontend"
         sh "./bin/set-scanning-exclusions.sh ${execParams}"
       }
 
       stage('Run user journey through ZAP') {
-        sh "${dockerCompose} up --no-deps --no-color integration-tests"
+        sh "docker-compose up --no-deps --no-color integration-tests"
 
-        def testExitCode = steps.sh returnStdout: true, script: "${dockerCompose} ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
+        def testExitCode = steps.sh returnStdout: true, script: "docker-compose ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
         if (testExitCode.toInteger() > 0) {
           archiveArtifacts 'output/*.png'
           error('Integration tests failed')
         }
 
-        sh "${dockerCompose} ${exec} zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html"
+        sh "docker-compose ${exec} zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html"
         archiveArtifacts 'reports/zap-scan-report.html'
       }
     } finally {
       stage('Stop environments') {
-        sh "${dockerCompose} ps > output/docker-status.txt"
+        sh "docker-compose ps > output/docker-status.txt"
         archiveArtifacts 'output/docker-status.txt'
 
-        sh "for service in \$(${dockerCompose} config --services); do ${dockerCompose} logs --no-color \$service > output/docker-log-\$service.txt; done"
+        sh "for service in \$(docker-compose config --services); do docker-compose logs --no-color \$service > output/docker-log-\$service.txt; done"
         archiveArtifacts 'output/docker-log*.txt'
 
-        sh "${dockerCompose} down --remove-orphans"
+        sh "docker-compose down --remove-orphans"
       }
     }
   }
 }
 
-private void checkoutIntegrationTests() {
+private void prepareIntegrationTestsResources() {
   checkout([
     $class: 'GitSCM',
     branches: [[name: 'master']],
     userRemoteConfigs: [[url: 'https://github.com/hmcts/cmc-integration-tests.git']],
     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'integration-tests']]
   ])
+  sh './bin/link-integration-tests-project.sh integration-tests'
 }
