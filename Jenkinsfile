@@ -26,58 +26,69 @@ env.COMPOSE_HTTP_TIMEOUT = 240
 String execParams = '-u $(id -u) -T'
 GString exec = "exec ${execParams}"
 
-node {
-  wrap([$class: 'VaultBuildWrapper', vaultSecrets: secrets]) {
-    stage('Checkout') {
-      deleteDir()
-      checkout scm
-      prepareIntegrationTestsResources()
-    }
+@Library(['Reform'])
+String channel = '#cmc-tech-notification'
 
-    stage('Update images') {
-      sh "docker-compose pull"
-    }
-
-    try {
-      stage('Start & setup environment') {
-        sh 'mkdir -p output'
-        sh 'mkdir -p reports'
-        sh "docker-compose up -d zap-proxy remote-webdriver citizen-frontend legal-frontend"
-        sh "./bin/set-scanning-exclusions.sh ${execParams}"
-      }
-
-      stage('Run user journey through ZAP') {
-        sh "docker-compose up --no-deps --no-color integration-tests"
-
-        def testExitCode = steps.sh returnStdout: true, script: "docker-compose ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
-        if (testExitCode.toInteger() > 0) {
-          archiveArtifacts 'output/*.png'
-          error('Integration tests failed')
+timestamps {
+  lock(resource: "cmc-security-scan-${env.BRANCH_NAME}", inversePrecedence: true) {
+    node {
+      wrap([$class: 'VaultBuildWrapper', vaultSecrets: secrets]) {
+        stage('Checkout') {
+          deleteDir()
+          checkout scm
+          prepareIntegrationTestsResources()
         }
 
-        sh "docker-compose ${exec} zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html"
-        archiveArtifacts 'reports/zap-scan-report.html'
-      }
-    } finally {
-      stage('Stop environments') {
-        sh "docker-compose ps > output/docker-status.txt"
-        archiveArtifacts 'output/docker-status.txt'
+        stage('Update images') {
+          sh "docker-compose pull"
+        }
 
-        sh "for service in \$(docker-compose config --services); do docker-compose logs --no-color \$service > output/docker-log-\$service.txt; done"
-        archiveArtifacts 'output/docker-log*.txt'
+        try {
+          stage('Start & setup environment') {
+            sh 'mkdir -p output'
+            sh 'mkdir -p reports'
+            sh "docker-compose up -d zap-proxy remote-webdriver citizen-frontend legal-frontend"
+            sh "./bin/set-scanning-exclusions.sh ${execParams}"
+          }
 
-        sh "docker-compose down --remove-orphans"
+          stage('Run user journey through ZAP') {
+            sh "docker-compose up --no-deps --no-color integration-tests"
+
+            def testExitCode = steps.sh returnStdout: true, script: "docker-compose ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
+            if (testExitCode.toInteger() > 0) {
+              archiveArtifacts 'output/*.png'
+              error('Integration tests failed')
+            }
+
+            sh "docker-compose ${exec} zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html"
+            archiveArtifacts 'reports/zap-scan-report.html'
+          }
+        } catch (Throwable err) {
+          notifyBuildFailure channel: channel
+          throw err
+        } finally {
+          stage('Stop environments') {
+            sh "docker-compose ps > output/docker-status.txt"
+            archiveArtifacts 'output/docker-status.txt'
+
+            sh "for service in \$(docker-compose config --services); do docker-compose logs --no-color \$service > output/docker-log-\$service.txt; done"
+            archiveArtifacts 'output/docker-log*.txt'
+
+            sh "docker-compose down --remove-orphans"
+          }
+        }
       }
     }
   }
+  notifyBuildFixed channel: channel
 }
 
 private void prepareIntegrationTestsResources() {
   checkout([
-    $class: 'GitSCM',
-    branches: [[name: 'master']],
+    $class           : 'GitSCM',
+    branches         : [[name: 'master']],
     userRemoteConfigs: [[url: 'https://github.com/hmcts/cmc-integration-tests.git']],
-    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'integration-tests']]
+    extensions       : [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'integration-tests']]
   ])
   sh './bin/link-integration-tests-project.sh integration-tests'
 }
