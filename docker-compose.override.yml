@@ -1,8 +1,17 @@
 version: '2.1'
 
 services:
-  integration-tests:
-    command: test -- --grep '@quick'
+  citizen-integration-tests:
+    command: test:integration -- --grep '@quick'
+    environment:
+      - http_proxy=http://zap-proxy:8080
+      - https_proxy=http://zap-proxy:8080
+      - no_proxy=idam-api,remote-webdriver,claim-store-api
+    depends_on:
+      zap-proxy:
+        condition: service_healthy
+  legal-integration-tests:
+    command: test:integration -- --grep '@quick'
     environment:
       - http_proxy=http://zap-proxy:8080
       - https_proxy=http://zap-proxy:8080
