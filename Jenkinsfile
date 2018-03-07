@@ -18,6 +18,11 @@ def secrets = [
     [
       [$class: 'VaultSecretValue', envVar: 'GOV_NOTIFY_API_KEY', vaultKey: 'value']
     ]
+  ],
+  [$class: 'VaultSecret', path: 'secret/dev/cmc/postcode-lookup/api-key', secretValues:
+    [
+      [$class: 'VaultSecretValue', envVar: 'POSTCODE_LOOKUP_API_KEY', vaultKey: 'value']
+    ]
   ]
 ]
 
