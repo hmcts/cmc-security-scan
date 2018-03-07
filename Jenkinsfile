@@ -51,13 +51,19 @@ timestamps {
             sh "./bin/set-scanning-exclusions.sh ${execParams}"
           }
 
-          stage('Run user journey through ZAP') {
-            sh "docker-compose up --no-deps --no-color integration-tests"
-
-            def testExitCode = steps.sh returnStdout: true, script: "docker-compose ps -q integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
+          stage('Run user journeys through ZAP') {
+            sh "docker-compose up --no-deps --no-color citizen-integration-tests"
+            def testExitCode = steps.sh returnStdout: true, script: "docker-compose ps -q citizen-integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
             if (testExitCode.toInteger() > 0) {
               archiveArtifacts 'output/*.png'
-              error('Integration tests failed')
+              error('Citizen integration tests failed')
+            }
+
+            sh "docker-compose up --no-deps --no-color legal-integration-tests"
+            testExitCode = steps.sh returnStdout: true, script: "docker-compose ps -q legal-integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
+            if (testExitCode.toInteger() > 0) {
+              archiveArtifacts 'output/*.png'
+              error('Legal integration tests failed')
             }
 
             sh "docker-compose ${exec} zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html"

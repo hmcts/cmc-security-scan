@@ -3,10 +3,15 @@
 source $(dirname $0)/internal/common.sh
 checkIntegrationTestsResourcesExists
 
-docker-compose up --no-deps integration-tests
-
+docker-compose run --no-deps citizen-integration-tests
 if [ $? != 0 ]; then
-  echo 'Integration tests failed'
+  echo 'Citizen integration tests failed'
+  exit 1
+fi
+
+docker-compose run --no-deps legal-integration-tests
+if [ $? != 0 ]; then
+  echo 'Legal integration tests failed'
   exit 1
 fi
 
