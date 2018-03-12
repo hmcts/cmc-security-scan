@@ -52,7 +52,7 @@ timestamps {
           stage('Start & setup environment') {
             sh 'mkdir -p output'
             sh 'mkdir -p reports'
-            sh "docker-compose up -d zap-proxy remote-webdriver citizen-frontend legal-frontend"
+            sh "docker-compose up -d zap-proxy remote-webdriver citizen-frontend legal-frontend ccd-importer"
             sh "./bin/set-scanning-exclusions.sh ${execParams}"
           }
 
