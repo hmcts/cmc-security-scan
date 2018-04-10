@@ -1,0 +1,105 @@
+#!groovy
+
+properties(
+  [[$class: 'GithubProjectProperty', displayName: 'Security scan', projectUrlStr: 'https://github.com/hmcts/cmc-security-scan'],
+   pipelineTriggers([
+     [$class: 'GitHubPushTrigger'],
+     [$class: 'hudson.triggers.TimerTrigger', spec: 'H 1 * * *']
+   ])]
+)
+
+def secrets = [
+  [$class: 'VaultSecret', path: 'secret/test/cc/payment/api/gov-pay-keys/cmc', secretValues:
+    [
+      [$class: 'VaultSecretValue', envVar: 'GOV_PAY_AUTH_KEY_CMC', vaultKey: 'value']
+    ]
+  ],
+  [$class: 'VaultSecret', path: 'secret/dev/cmc/notify/integration-tests/test_mode_api_key', secretValues:
+    [
+      [$class: 'VaultSecretValue', envVar: 'GOV_NOTIFY_API_KEY', vaultKey: 'value']
+    ]
+  ],
+  [$class: 'VaultSecret', path: 'secret/dev/cmc/postcode-lookup/api-key', secretValues:
+    [
+      [$class: 'VaultSecretValue', envVar: 'POSTCODE_LOOKUP_API_KEY', vaultKey: 'value']
+    ]
+  ]
+]
+
+env.COMPOSE_HTTP_TIMEOUT = 240
+
+String execParams = '-u $(id -u) -T'
+GString exec = "exec ${execParams}"
+
+@Library(['Reform'])
+String channel = '#cmc-tech-notification'
+
+timestamps {
+  lock(resource: "cmc-security-scan-${env.BRANCH_NAME}", inversePrecedence: true) {
+    node {
+      wrap([$class: 'VaultBuildWrapper', vaultSecrets: secrets]) {
+        stage('Checkout') {
+          deleteDir()
+          checkout scm
+          prepareIntegrationTestsResources()
+        }
+
+        stage('Update images') {
+          sh "docker-compose pull"
+        }
+
+        try {
+          stage('Start & setup environment') {
+            sh 'mkdir -p output'
+            sh 'mkdir -p reports'
+            sh "docker-compose up -d zap-proxy remote-webdriver citizen-frontend legal-frontend ccd-importer"
+            sh "./bin/set-scanning-exclusions.sh ${execParams}"
+          }
+
+          stage('Run user journeys through ZAP') {
+            sh "docker-compose up --no-deps --no-color citizen-integration-tests"
+            def testExitCode = steps.sh returnStdout: true, script: "docker-compose ps -q citizen-integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
+            if (testExitCode.toInteger() > 0) {
+              archiveArtifacts 'output/*.png'
+              error('Citizen integration tests failed')
+            }
+
+            sh "docker-compose up --no-deps --no-color legal-integration-tests"
+            testExitCode = steps.sh returnStdout: true, script: "docker-compose ps -q legal-integration-tests | xargs docker inspect -f '{{ .State.ExitCode }}'"
+            if (testExitCode.toInteger() > 0) {
+              archiveArtifacts 'output/*.png'
+              error('Legal integration tests failed')
+            }
+
+            sh "docker-compose ${exec} zap-proxy zap-cli report -o /zap/reports/zap-scan-report.html -f html"
+            archiveArtifacts 'reports/zap-scan-report.html'
+          }
+        } catch (Throwable err) {
+          notifyBuildFailure channel: channel
+          throw err
+        } finally {
+          stage('Stop environments') {
+            sh "docker-compose ps > output/docker-status.txt"
+            archiveArtifacts 'output/docker-status.txt'
+
+            sh "for service in \$(docker-compose config --services); do docker-compose logs --no-color \$service > output/docker-log-\$service.txt; done"
+            archiveArtifacts 'output/docker-log*.txt'
+
+            sh "docker-compose down --remove-orphans"
+          }
+        }
+      }
+    }
+  }
+  notifyBuildFixed channel: channel
+}
+
+private void prepareIntegrationTestsResources() {
+  checkout([
+    $class           : 'GitSCM',
+    branches         : [[name: 'master']],
+    userRemoteConfigs: [[url: 'https://github.com/hmcts/cmc-integration-tests.git']],
+    extensions       : [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'integration-tests']]
+  ])
+  sh './bin/link-integration-tests-project.sh integration-tests'
+}
