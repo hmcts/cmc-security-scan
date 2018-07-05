@@ -75,7 +75,7 @@ timestamps {
             archiveArtifacts 'reports/zap-scan-report.html'
           }
         } catch (Throwable err) {
-          notifyBuildFailure channel: channel
+        //  notifyBuildFailure channel: channel
           throw err
         } finally {
           stage('Stop environments') {
